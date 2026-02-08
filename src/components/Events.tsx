@@ -7,7 +7,6 @@ interface CalendarEvent {
   title: string;
   description: string;
   date: Date;
-  endDate?: Date;
 }
 
 const Events = () => {
@@ -19,14 +18,19 @@ const Events = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Use CORS proxy to fetch the ICS feed
         const icsUrl = 'https://calendar.google.com/calendar/ical/libertyloft%40proton.me/public/basic.ics';
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(icsUrl)}`;
+        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(icsUrl)}`;
         
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('Failed to fetch');
+        if (!response.ok) {
+          throw new Error('Failed to fetch');
+        }
         
         const icsText = await response.text();
+        if (!icsText.includes('BEGIN:VCALENDAR')) {
+          throw new Error('Invalid calendar data');
+        }
+        
         const parsedEvents = parseICS(icsText);
         
         // Filter only upcoming events and sort by date
@@ -57,7 +61,7 @@ const Events = () => {
       const endIndex = block.indexOf('END:VEVENT');
       const eventData = block.substring(0, endIndex);
       
-      // Handle line folding (lines starting with space are continuation)
+      // Handle line folding
       const unfoldedData = eventData.replace(/\r?\n[ \t]/g, '');
       const lines = unfoldedData.split(/\r?\n/);
       
@@ -151,9 +155,17 @@ const Events = () => {
         {error && (
           <div className="text-center py-12 border border-border rounded">
             <Calendar size={32} className="mx-auto mb-4 text-ghost" />
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               {language === 'cs' ? 'Nepodařilo se načíst akce.' : 'Unable to load events.'}
             </p>
+            <a
+              href="https://calendar.google.com/calendar/embed?src=libertyloft%40proton.me&ctz=Europe%2FPrague"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ghost-bright hover:text-foreground transition-colors underline underline-offset-4"
+            >
+              {language === 'cs' ? 'Zobrazit kalendář' : 'View calendar'}
+            </a>
           </div>
         )}
 
