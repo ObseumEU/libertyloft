@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, CalendarPlus, Clock } from 'lucide-react';
+import { Calendar, CalendarPlus, Clock, MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CalendarApiEvent {
@@ -51,6 +51,21 @@ const formatGoogleDateTime = (date: Date) => {
 const calendarIcsUrl =
   'https://calendar.google.com/calendar/ical/libertyloft%40proton.me/public/basic.ics';
 const wholeCalendarUrl = `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(calendarIcsUrl)}`;
+const defaultLocationLabel = 'LibertyLoft, Papírenská 120/12, Praha 6-Bubeneč';
+const defaultLocationMapUrl = 'https://maps.app.goo.gl/bW7NzqNAi2ezyweJ6';
+
+const extractEventLocation = (description: string) => {
+  const locationMatch = description.match(/(?:^|\n)📍\s*(.+)/);
+  return locationMatch?.[1]?.trim() ?? '';
+};
+
+const getLocationMapUrl = (location: string) => {
+  if (!location) {
+    return defaultLocationMapUrl;
+  }
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+};
 
 const Events = () => {
   const { t, language } = useLanguage();
@@ -154,8 +169,7 @@ const Events = () => {
       dates = `${formatGoogleDateTime(event.date)}/${formatGoogleDateTime(endDate)}`;
     }
 
-    const locationMatch = event.description.match(/📍\s*(.+)/);
-    const location = locationMatch?.[1]?.trim() ?? '';
+    const location = extractEventLocation(event.description);
     const params = new URLSearchParams({
       action: 'TEMPLATE',
       text: event.title,
@@ -219,13 +233,16 @@ const Events = () => {
 
         {!error && events.length > 0 && (
           <div className="space-y-4">
-            {events.map((event) => (
-              <article
-                key={event.id}
-                className={`relative group p-6 border border-border rounded hover:border-ghost transition-all duration-300 hover-lift ${
-                  openCalendarMenuId === event.id ? 'z-40' : 'z-10'
-                }`}
-              >
+            {events.map((event) => {
+              const eventLocation = extractEventLocation(event.description);
+
+              return (
+                <article
+                  key={event.id}
+                  className={`relative group p-6 border border-border rounded hover:border-ghost transition-all duration-300 hover-lift ${
+                    openCalendarMenuId === event.id ? 'z-40' : 'z-10'
+                  }`}
+                >
                 <div className="flex flex-col md:flex-row md:items-start gap-4">
                   <div className="flex-shrink-0 md:w-32 md:text-right">
                     <div className="flex items-center gap-2 md:justify-end text-ghost-bright text-sm">
@@ -239,6 +256,16 @@ const Events = () => {
                       <Clock size={12} />
                       <span>{formatTime(event)}</span>
                     </div>
+                    <a
+                      href={getLocationMapUrl(eventLocation)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={eventLocation || defaultLocationLabel}
+                      className="mt-1 inline-flex items-center gap-1.5 text-xs text-ghost-bright hover:text-foreground transition-colors md:justify-end"
+                    >
+                      <MapPin size={11} />
+                      <span>{t('events.mapLink')}</span>
+                    </a>
                   </div>
 
                   <div className="hidden md:block w-px bg-border group-hover:bg-ghost transition-colors self-stretch" />
@@ -295,8 +322,9 @@ const Events = () => {
                     </div>
                   </div>
                 </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </div>
