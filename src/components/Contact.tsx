@@ -4,9 +4,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const Contact = () => {
   const { t } = useLanguage();
 
-  const address = "Papírenská 120/12, 160 00 Praha 6-Bubeneč";
-  const googleMapsUrl = "https://www.google.com/maps/place/Pap%C3%ADrensk%C3%A1+120%2F12,+160+00+Praha+6-Bubene%C4%8D";
-  const embedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2559.5!2d14.39!3d50.11!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470b9523c3b6f5e5%3A0x0!2sPap%C3%ADrensk%C3%A1%20120%2F12%2C%20160%2000%20Praha%206-Bubene%C4%8D!5e0!3m2!1sen!2scz!4v1";
+  const address = "LibertyLoft, Papírenská 120/12, 160 00 Praha 6-Bubeneč";
+  const googleMapsUrl = "https://maps.app.goo.gl/bW7NzqNAi2ezyweJ6";
+  const embedUrl =
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2559.6571727153414!2d14.400103149724785!3d50.111274410771!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470b95c1edc71c1f%3A0x7559ac62925875eb!2sLibertyLoft!5e0!3m2!1sen!2scz!4v1770644920847!5m2!1sen!2scz";
 
   return (
     <section id="contact" className="section-padding bg-card">
