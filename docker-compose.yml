@@ -1,0 +1,27 @@
+services:
+  calendar-backend:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: libertyloft-calendar-backend
+    environment:
+      CALENDAR_BACKEND_PORT: 3001
+      CALENDAR_PREFETCH_INTERVAL_MS: 10000
+      CALENDAR_MAX_EVENTS: 6
+      CALENDAR_ICS_URL: https://calendar.google.com/calendar/ical/libertyloft%40proton.me/public/basic.ics
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: libertyloft-web
+    environment:
+      CALENDAR_BACKEND_URL: http://calendar-backend:3001
+    depends_on:
+      - calendar-backend
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

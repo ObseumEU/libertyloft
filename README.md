@@ -1,73 +1,125 @@
-# Welcome to your Lovable project
+# LibertyLoft Website
 
-## Project info
+A React + Vite website for LibertyLoft, because apparently community spaces also need deployment pipelines.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Step 1: Make GPT Do All The Work
+Because typing commands yourself is clearly an unacceptable burden.
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Install OpenAI Codex CLI
+Pick one:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+npm i -g @openai/codex
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```sh
+brew install --cask codex
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+Check it actually installed:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```sh
+codex -V
+```
+
+### Login (so GPT can start carrying the team)
+Interactive login:
+
+```sh
+codex login
+```
+
+Or API key login:
+
+```sh
+export OPENAI_API_KEY="your_api_key_here"
+printenv OPENAI_API_KEY | codex login --with-api-key
+```
+
+### Use it
+Open interactive Codex:
+
+```sh
+codex
+```
+
+Run a one-shot task:
+
+```sh
+codex exec "Fix this project and pretend I helped"
+```
+
+## Project Description
+What this repo does, while everyone debates tabs vs spaces:
+
+- `web` frontend: Vite + React + TypeScript + Tailwind
+- `calendar-backend`: lightweight Node server that prefetches Google Calendar ICS into memory every 10 seconds
+- frontend reads events from `/api/calendar` (not directly from external proxy endpoints)
+- Docker support for running both services together
+- ngrok-compatible setup for exposing local dev publicly
+
+## Local Run
+Install deps:
+
+```sh
+npm install
+```
+
+Run backend cache server (`3001`):
+
+```sh
+npm run backend
+```
+
+Run frontend (`8080`):
+
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Or run both at once:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+npm run dev:full
+```
 
-**Use GitHub Codespaces**
+Open:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- `http://localhost:8080/`
 
-## What technologies are used for this project?
+## Docker Run
+Build and run both services:
 
-This project is built with:
+```sh
+docker compose up --build
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Open:
 
-## How can I deploy this project?
+- `http://localhost:8080/`
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Services:
 
-## Can I connect a custom domain to my Lovable project?
+- `web` on port `8080`
+- `calendar-backend` on port `3001`
 
-Yes, you can!
+## Backend Environment Variables
+- `CALENDAR_BACKEND_PORT` default: `3001`
+- `CALENDAR_PREFETCH_INTERVAL_MS` default: `10000`
+- `CALENDAR_MAX_EVENTS` default: `6`
+- `CALENDAR_ICS_URL` default: public LibertyLoft ICS URL
+- `CALENDAR_BACKEND_URL` default: `http://localhost:3001`
+- `NGROK_DOMAIN` default: `clement-absolutory-emmett.ngrok-free.dev`
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## API Endpoints
+- `GET /api/calendar`
+- `GET /api/calendar/health`
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Static ngrok Domain (Optional)
+If you want the internet to inspect your localhost choices:
+
+```sh
+./ngrok.exe http 8080 --url https://clement-absolutory-emmett.ngrok-free.dev
+```
+
+If you see an ngrok warning page, yes, that is normal on free tier domains. Continue to site.
