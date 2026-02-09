@@ -5,13 +5,19 @@ import path from "path";
 const calendarBackendTarget = process.env.CALENDAR_BACKEND_URL ?? "http://localhost:3001";
 const ngrokDomain =
   process.env.NGROK_DOMAIN ?? "clement-absolutory-emmett.ngrok-free.dev";
+const allowedHosts = [
+  ngrokDomain,
+  "libertyloft.cz",
+  "www.libertyloft.cz",
+  ...(process.env.ALLOWED_HOSTS?.split(",").map((host) => host.trim()) ?? []),
+].filter(Boolean);
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
-    allowedHosts: [ngrokDomain],
+    allowedHosts,
     proxy: {
       "/api": {
         target: calendarBackendTarget,
@@ -25,6 +31,7 @@ export default defineConfig(() => ({
   preview: {
     host: "::",
     port: 8080,
+    allowedHosts,
     proxy: {
       "/api": {
         target: calendarBackendTarget,

@@ -3,7 +3,7 @@ name: Build and Push Docker Images
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   # Job to generate the matrix of projects with Dockerfiles
@@ -68,6 +68,7 @@ jobs:
         run: |
           set -euo pipefail
 
+<<<<<<< HEAD
           # For PROJECT_PATH=".", use repo name instead of basename(".") which is invalid for tags.
           if [ "$PROJECT_PATH" = "." ]; then
             PROJECT_NAME="${GITHUB_REPOSITORY##*/}"
@@ -83,6 +84,26 @@ jobs:
           if [ -z "$PROJECT_NAME" ]; then
             PROJECT_NAME="app"
           fi
+=======
+          # Explicitly map service images for stable production naming.
+          case "$PROJECT_PATH" in
+            ".")
+              PROJECT_NAME="libertyloft-frontend"
+              ;;
+            "./server")
+              PROJECT_NAME="libertyloft-backend"
+              ;;
+            *)
+              PROJECT_NAME="$(basename "$PROJECT_PATH")"
+              PROJECT_NAME="$(echo "$PROJECT_NAME" \
+                | tr '[:upper:]' '[:lower:]' \
+                | sed -E 's/[^a-z0-9._-]+/-/g; s/^[._-]+//; s/[._-]+$//; s/-+/-/g')"
+              if [ -z "$PROJECT_NAME" ]; then
+                PROJECT_NAME="app"
+              fi
+              ;;
+          esac
+>>>>>>> master
 
           IMAGE_NAME="${DOCKER_USER}/${PROJECT_NAME}:latest"
 

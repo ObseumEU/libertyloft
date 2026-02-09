@@ -55,6 +55,11 @@ const translations: Record<Language, Record<string, string>> = {
     'events.upcoming': 'Nadcházející akce',
     'events.noEvents': 'Žádné nadcházející akce',
     'events.loading': 'Načítám akce...',
+    'events.addToCalendar': 'Přidat do kalendáře',
+    'events.addSingleEvent': 'Přidat jen tento event',
+    'events.addSingleEventHint': 'Otevře se formulář s vyplněným jedním eventem',
+    'events.addWholeCalendar': 'Přidat celý kalendář',
+    'events.addWholeCalendarHint': 'Přihlásíš se k odběru všech veřejných akcí',
     
     // Contact
     'contact.title': 'Kontakt',
@@ -118,6 +123,11 @@ const translations: Record<Language, Record<string, string>> = {
     'events.upcoming': 'Upcoming Events',
     'events.noEvents': 'No upcoming events',
     'events.loading': 'Loading events...',
+    'events.addToCalendar': 'Add to Calendar',
+    'events.addSingleEvent': 'Add only this event',
+    'events.addSingleEventHint': 'Opens a prefilled form for this single event',
+    'events.addWholeCalendar': 'Add whole calendar',
+    'events.addWholeCalendarHint': 'Subscribe to all public events',
     
     // Contact
     'contact.title': 'Contact',

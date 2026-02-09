@@ -103,6 +103,43 @@ Services:
 - `web` on port `8080`
 - `calendar-backend` on port `3001`
 
+## Production Docker Compose
+The production compose file uses prebuilt images from Docker Hub:
+
+- `smixers/libertyloft-frontend:latest` for `web`
+- `smixers/libertyloft-backend:latest` for `calendar-backend`
+
+Deploy/refresh:
+
+```sh
+docker compose pull
+docker compose up -d
+```
+
+Useful overrides:
+
+```sh
+WEB_BIND_ADDRESS=0.0.0.0 WEB_PORT=8080 docker compose up -d
+```
+
+Cloudflare tunnel service:
+
+```sh
+CLOUDFLARE_TUNNEL_TOKEN=your_token docker compose up -d
+```
+
+Automatic image updates with Watchtower:
+
+```sh
+docker compose up -d
+```
+
+Adjust polling interval (seconds):
+
+```sh
+WATCHTOWER_POLL_INTERVAL=300 docker compose up -d
+```
+
 ## Backend Environment Variables
 - `CALENDAR_BACKEND_PORT` default: `3001`
 - `CALENDAR_PREFETCH_INTERVAL_MS` default: `10000`

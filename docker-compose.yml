@@ -1,27 +1,81 @@
 services:
   calendar-backend:
-    build:
-      context: .
-      dockerfile: server/Dockerfile
+    # CI publishes this from ./server/Dockerfile
+    image: ${CALENDAR_BACKEND_IMAGE:-smixers/libertyloft-backend:latest}
     container_name: libertyloft-calendar-backend
+    init: true
     environment:
       CALENDAR_BACKEND_PORT: 3001
       CALENDAR_PREFETCH_INTERVAL_MS: 10000
       CALENDAR_MAX_EVENTS: 6
       CALENDAR_ICS_URL: https://calendar.google.com/calendar/ical/libertyloft%40proton.me/public/basic.ics
-    ports:
-      - "3001:3001"
+    expose:
+      - "3001"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://localhost:3001/api/calendar/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     restart: unless-stopped
-
+    networks:
+      - web-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # CI publishes this from ./Dockerfile
+    image: ${WEB_IMAGE:-smixers/libertyloft-frontend:latest}
     container_name: libertyloft-web
+    init: true
     environment:
       CALENDAR_BACKEND_URL: http://calendar-backend:3001
     depends_on:
-      - calendar-backend
+      calendar-backend:
+        condition: service_healthy
+    # Expose only on localhost by default; change WEB_BIND_ADDRESS/WEB_PORT if needed.
     ports:
-      - "8080:8080"
+      - "127.0.0.1:2368:8080"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://localhost:8080/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
+    networks:
+      - web-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: libertyloft-cloudflared
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+    network_mode: host
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN not set}
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: libertyloft-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - --label-enable
+      - --cleanup
+      - --interval
+      - "${WATCHTOWER_POLL_INTERVAL:-300}"
+    networks:
+      - web-network
+networks:
+  web-network:
+    driver: bridge

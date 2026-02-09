@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, CalendarPlus, Clock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CalendarApiEvent {
@@ -37,11 +37,45 @@ const sanitizeDescription = (value: string) => {
     .join('\n');
 };
 
+const formatGoogleAllDayDate = (date: Date) => {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
+};
+
+const formatGoogleDateTime = (date: Date) => {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+};
+
+const calendarIcsUrl =
+  'https://calendar.google.com/calendar/ical/libertyloft%40proton.me/public/basic.ics';
+const wholeCalendarUrl = `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(calendarIcsUrl)}`;
+
 const Events = () => {
   const { t, language } = useLanguage();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [openCalendarMenuId, setOpenCalendarMenuId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      if (!target.closest('[data-calendar-menu]')) {
+        setOpenCalendarMenuId(null);
+      }
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -107,6 +141,36 @@ const Events = () => {
     }).format(event.date);
   };
 
+  const getAddToCalendarUrl = (event: CalendarEvent) => {
+    const endDate = new Date(event.date);
+    let dates = '';
+
+    if (event.allDay) {
+      endDate.setUTCDate(endDate.getUTCDate() + 1);
+      dates = `${formatGoogleAllDayDate(event.date)}/${formatGoogleAllDayDate(endDate)}`;
+    } else {
+      // Events don't include explicit end time in API, so default duration is 2 hours.
+      endDate.setHours(endDate.getHours() + 2);
+      dates = `${formatGoogleDateTime(event.date)}/${formatGoogleDateTime(endDate)}`;
+    }
+
+    const locationMatch = event.description.match(/📍\s*(.+)/);
+    const location = locationMatch?.[1]?.trim() ?? '';
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: event.title,
+      dates,
+      details: event.description,
+      ctz: 'Europe/Prague',
+    });
+
+    if (location) {
+      params.set('location', location);
+    }
+
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  };
+
   if (loading) {
     return (
       <section id="events" className="section-padding">
@@ -158,7 +222,9 @@ const Events = () => {
             {events.map((event) => (
               <article
                 key={event.id}
-                className="group p-6 border border-border rounded hover:border-ghost transition-all duration-300 hover-lift"
+                className={`relative group p-6 border border-border rounded hover:border-ghost transition-all duration-300 hover-lift ${
+                  openCalendarMenuId === event.id ? 'z-40' : 'z-10'
+                }`}
               >
                 <div className="flex flex-col md:flex-row md:items-start gap-4">
                   <div className="flex-shrink-0 md:w-32 md:text-right">
@@ -186,6 +252,47 @@ const Events = () => {
                         {event.description}
                       </p>
                     )}
+                    <div className="relative mt-4 inline-block text-left" data-calendar-menu>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 rounded-md border border-border/80 bg-card px-3 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:border-ghost hover:bg-muted/40"
+                        onClick={() =>
+                          setOpenCalendarMenuId((current) => (current === event.id ? null : event.id))
+                        }
+                        aria-haspopup="menu"
+                        aria-controls={`calendar-menu-${event.id}`}
+                        aria-expanded={openCalendarMenuId === event.id}
+                      >
+                        <CalendarPlus size={14} />
+                        {t('events.addToCalendar')}
+                      </button>
+
+                      {openCalendarMenuId === event.id && (
+                        <div
+                          id={`calendar-menu-${event.id}`}
+                          className="absolute left-0 top-full z-20 mt-2 min-w-56 max-w-[calc(100vw-2rem)] rounded-lg border border-border/80 bg-background/95 p-1.5 shadow-xl backdrop-blur"
+                        >
+                          <a
+                            href={getAddToCalendarUrl(event)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block rounded-md px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
+                            onClick={() => setOpenCalendarMenuId(null)}
+                          >
+                            {t('events.addSingleEvent')}
+                          </a>
+                          <a
+                            href={wholeCalendarUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 block rounded-md px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
+                            onClick={() => setOpenCalendarMenuId(null)}
+                          >
+                            {t('events.addWholeCalendar')}
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </article>

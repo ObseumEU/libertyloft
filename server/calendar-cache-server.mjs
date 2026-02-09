@@ -105,6 +105,8 @@ const parseICS = (icsText) => {
     let title = "";
     let description = "";
     let parsedDate = null;
+    let visibility = "PUBLIC";
+    let status = "CONFIRMED";
 
     for (const line of lines) {
       if (line.startsWith("UID:")) {
@@ -124,10 +126,34 @@ const parseICS = (icsText) => {
 
       if (line.startsWith("DTSTART")) {
         parsedDate = parseDateValue(line);
+        continue;
+      }
+
+      if (line.startsWith("CLASS:")) {
+        visibility = normalizeText(line.slice(6)).toUpperCase();
+        continue;
+      }
+
+      if (line.startsWith("X-CALENDARSERVER-ACCESS:")) {
+        visibility = normalizeText(line.slice(23)).toUpperCase();
+        continue;
+      }
+
+      if (line.startsWith("STATUS:")) {
+        status = normalizeText(line.slice(7)).toUpperCase();
       }
     }
 
     if (!title || !parsedDate?.date) {
+      continue;
+    }
+
+    const titleLooksPrivate = /\b(private|soukrom)\b/i.test(title) || /^busy$/i.test(title);
+    const isPrivate =
+      visibility.includes("PRIVATE") || visibility.includes("CONFIDENTIAL") || titleLooksPrivate;
+    const isCancelled = status === "CANCELLED";
+
+    if (isPrivate || isCancelled) {
       continue;
     }
 
