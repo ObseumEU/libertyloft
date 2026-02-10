@@ -67,6 +67,8 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.address': 'Adresa',
     'contact.directions': 'Navigace',
     'contact.email': 'Email',
+    'contact.facebook': 'Facebook',
+    'contact.facebookLink': 'Navštívit stránku',
     
     // Newsletter
     'newsletter.title': 'Odebírej novinky',
@@ -136,6 +138,8 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.address': 'Address',
     'contact.directions': 'Directions',
     'contact.email': 'Email',
+    'contact.facebook': 'Facebook',
+    'contact.facebookLink': 'Visit page',
     
     // Newsletter
     'newsletter.title': 'Subscribe to updates',

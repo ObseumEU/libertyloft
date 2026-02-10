@@ -17,6 +17,7 @@ const Footer = () => {
               href="https://discord.com/invite/cumW9jhnXZ"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Discord"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -24,7 +25,19 @@ const Footer = () => {
               </svg>
             </a>
             <a
+              href="https://www.facebook.com/profile.php?id=61586275214797"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22.675 0h-21.35C.595 0 0 .595 0 1.326v21.348C0 23.405.595 24 1.326 24H12.82v-9.294H9.692V11.08h3.129V8.413c0-3.1 1.894-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24h-1.918c-1.504 0-1.795.715-1.795 1.763v2.312h3.587l-.467 3.626h-3.12V24h6.116C23.405 24 24 23.405 24 22.674V1.326C24 .595 23.405 0 22.675 0z"/>
+              </svg>
+            </a>
+            <a
               href="mailto:libertyloft@proton.me"
+              aria-label="Email"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
