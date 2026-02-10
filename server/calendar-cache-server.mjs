@@ -87,6 +87,15 @@ const parseDateValue = (line) => {
   };
 };
 
+const getPropertyValue = (line) => {
+  const separatorIndex = line.indexOf(":");
+  if (separatorIndex === -1) {
+    return "";
+  }
+
+  return line.slice(separatorIndex + 1);
+};
+
 const parseICS = (icsText) => {
   const events = [];
   const blocks = icsText.split("BEGIN:VEVENT").slice(1);
@@ -114,13 +123,13 @@ const parseICS = (icsText) => {
         continue;
       }
 
-      if (line.startsWith("SUMMARY:")) {
-        title = normalizeText(line.slice(8));
+      if (line.startsWith("SUMMARY")) {
+        title = normalizeText(getPropertyValue(line));
         continue;
       }
 
-      if (line.startsWith("DESCRIPTION:")) {
-        description = sanitizeDescription(line.slice(12));
+      if (line.startsWith("DESCRIPTION")) {
+        description = sanitizeDescription(getPropertyValue(line));
         continue;
       }
 
@@ -160,7 +169,7 @@ const parseICS = (icsText) => {
     events.push({
       id: uid || `${title}-${parsedDate.date.getTime()}`,
       title,
-      description: description.slice(0, 400),
+      description,
       date: parsedDate.date.toISOString(),
       allDay: parsedDate.allDay,
     });
